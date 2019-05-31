@@ -6,10 +6,6 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
 
-try:
-    import autoit
-except:
-    pass
 import time
 import datetime
 import os
@@ -82,24 +78,21 @@ def sendImage(img): # img - name of image along with ext
 
         # To send Videos and Images.
         mediaButtonInput = browser.find_element_by_xpath(
-            '//*[@id="main"]/header/div[3]/div/div[2]/span/div/div/ul/li[1]/button/span/input')
+            '//*[@id="main"]/header/div[3]/div/div[2]/span/div/div/ul/li[1]/button/input')
         # mediaButton.click()
         # time.sleep(3)
 
         image_path = os.getcwd() + '/Media/' + img
 
         mediaButtonInput.send_keys(image_path)
-        # autoit.control_focus("Open", "Edit1")
-        # autoit.control_set_text("Open", "Edit1", (image_path))
-        # autoit.control_click("Open", "Button1")
 
         time.sleep(3)
         whatsapp_send_button = browser.find_element_by_xpath(
             '//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/span[2]/div/div/span')
         whatsapp_send_button.click()
         # Controlling windows dialog
-    except NoSuchElementException:
-        print("Error in element")
+    except NoSuchElementException as e:
+        print(e)
         return
 
 def sendFile(filename):
@@ -126,17 +119,25 @@ def sendFile(filename):
         '//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/span[2]/div/div/span')
     whatsapp_send_button.click()
 
-if __name__ == '__main__':
+def main():
     whatsappLogin()
     time.sleep(6)
-    selectContact('+919535007624')
-    time.sleep(2)
-    sendMessage('bot message')
-    time.sleep(1)
-    sendImage('instagram.png')
-    # with open('test.csv', 'rU') as csvfile:
-    #     reader = csv.reader(csvfile, delimiter=' ')
+    with open('test.csv', 'rU') as csvfile:
+        reader = csv.reader(csvfile, delimiter=' ')
         
-    #     for i,row in enumerate(reader):
-    #         if i != 0:
-    #             print(row[0], i)
+        for row in reader:
+            try:
+                selectContact(row[0])
+                time.sleep(2)
+                # sendMessage('Ignore bot messages')
+                # time.sleep(1)
+                sendImage('instagram.png')
+                time.sleep(2)
+            except Exception as e:
+                print(e)
+                pass
+
+if __name__ == '__main__':
+    main()
+    
+            
