@@ -37,7 +37,7 @@ def whatsappLogin():
 def selectContact(number):
     global wait, browser
     # x_arg = '//span[contains(@title,' + contact + ')]'
-    search_box = browser.find_element_by_xpath('//input[contains(@title, "Search or start new chat")]')
+    search_box = browser.find_element_by_xpath('//input[contains(@class, "_2zCfw")]')
     search_box.click()
     search_box.clear()
     
@@ -46,10 +46,16 @@ def selectContact(number):
 
     time.sleep(2)
     
-    option = browser.find_elements_by_xpath('//div[contains(@class, "X7YrQ")]')[-1]
+    options = browser.find_elements_by_xpath('//div[contains(@class, "X7YrQ")]')
+    option = options[-1]
     option.click()
-            
-    
+
+    try:
+        input_box = browser.find_element_by_class_name("_2zCfw")
+    except NoSuchElementException:
+        option = options[-2]
+        option.click()
+
 def sendMessage(message):
     global wait, browser
     try:
@@ -61,6 +67,7 @@ def sendMessage(message):
                     Keys.ENTER).key_up(Keys.SHIFT).key_up(Keys.BACKSPACE).perform()
             else:
                 input_box.send_keys(ch)
+
         input_box.send_keys(Keys.ENTER)
         print("Message sent")
         # time.sleep(5)
@@ -69,32 +76,28 @@ def sendMessage(message):
         return
 
 def sendImage(img): # img - name of image along with ext
-    try:
-        # Attachment Drop Down Menu
-        clipButton = browser.find_element_by_xpath(
-            '//*[@id="main"]/header/div[3]/div/div[2]/div/span')
-        clipButton.click()
-        time.sleep(1)
+    # Attachment Drop Down Menu
+    clipButton = browser.find_element_by_xpath(
+        '//*[@id="main"]/header/div[3]/div/div[2]/div/span')
+    clipButton.click()
+    time.sleep(1)
 
-        # To send Videos and Images.
-        mediaButtonInput = browser.find_element_by_xpath(
-            '//*[@id="main"]/header/div[3]/div/div[2]/span/div/div/ul/li[1]/button/input')
-        # mediaButton.click()
-        # time.sleep(3)
+    # To send Videos and Images.
+    mediaButtonInput = browser.find_element_by_xpath(
+        '//*[@id="main"]/header/div[3]/div/div[2]/span/div/div/ul/li[1]/button/input')
+    # mediaButton.click()
+    # time.sleep(3)
 
-        image_path = os.getcwd() + '/Media/' + img
+    image_path = os.getcwd() + '/Media/' + img
 
-        mediaButtonInput.send_keys(image_path)
+    mediaButtonInput.send_keys(image_path)
 
-        time.sleep(3)
-        whatsapp_send_button = browser.find_element_by_xpath(
-            '//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/span[2]/div/div/span')
-        whatsapp_send_button.click()
-        # Controlling windows dialog
-    except NoSuchElementException as e:
-        print(e)
-        return
-
+    time.sleep(3)
+    whatsapp_send_button = browser.find_element_by_xpath(
+        '//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/span[2]/div/div/span')
+    whatsapp_send_button.click()
+    # Controlling windows dialog
+    
 def sendFile(filename):
     # Attachment Drop Down Menu
     clipButton = browser.find_element_by_xpath(
@@ -121,7 +124,7 @@ def sendFile(filename):
 
 def main():
     whatsappLogin()
-    time.sleep(6)
+    wait.until(EC.presence_of_element_located((By.XPATH, '//input[contains(@class, "_2zCfw")]')))
     with open('test.csv', 'rU') as csvfile:
         reader = csv.reader(csvfile, delimiter=' ')
         
@@ -129,10 +132,10 @@ def main():
             try:
                 selectContact(row[0])
                 time.sleep(2)
-                # sendMessage('Ignore bot messages')
-                # time.sleep(1)
-                sendImage('instagram.png')
-                time.sleep(2)
+                sendMessage('Bot messages')
+                time.sleep(3)
+                # sendImage('instagram.png')
+                # time.sleep(2)
             except Exception as e:
                 print(e)
                 pass
