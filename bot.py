@@ -12,7 +12,9 @@ import os
 import sys
 import csv
 import json
+import Tkinter
 
+actionChains = None
 browser = None
 Contact = None
 message = None
@@ -29,13 +31,14 @@ media = None
 def whatsappLogin():
     global wait,browser,Link
     browser = webdriver.Chrome()
+    actionChains = ActionChains(browser)
     wait = WebDriverWait(browser, 600)
     browser.get(Link)
     browser.maximize_window()
     print("QR scanned")
 
 def selectContact(number):
-    global wait, browser
+    global wait, browser, actionChains
     # x_arg = '//span[contains(@title,' + contact + ')]'
     search_box = browser.find_element_by_xpath('//input[contains(@class, "_2zCfw")]')
     search_box.click()
@@ -53,8 +56,9 @@ def selectContact(number):
     try:
         input_box = browser.find_element_by_class_name("_2zCfw")
     except NoSuchElementException:
-        option = options[-2]
-        option.click()
+        # newOption = options[2].find_element_by_class_name("_2UaNq")
+        newOption = options[2]
+        newOption.click()
 
 def sendMessage(message):
     global wait, browser
@@ -63,8 +67,8 @@ def sendMessage(message):
 
         for ch in message:
             if ch == "\n":
-                ActionChains(browser).key_down(Keys.SHIFT).key_down(Keys.ENTER).key_up(
-                    Keys.ENTER).key_up(Keys.SHIFT).key_up(Keys.BACKSPACE).perform()
+                btnSend = browser.find_element_by_class_name("_3M-N-")
+                btnSend.click()
             else:
                 input_box.send_keys(ch)
 
@@ -85,9 +89,7 @@ def sendImage(img): # img - name of image along with ext
     # To send Videos and Images.
     mediaButtonInput = browser.find_element_by_xpath(
         '//*[@id="main"]/header/div[3]/div/div[2]/span/div/div/ul/li[1]/button/input')
-    # mediaButton.click()
-    # time.sleep(3)
-
+    
     image_path = os.getcwd() + '/Media/' + img
 
     mediaButtonInput.send_keys(image_path)
@@ -123,6 +125,7 @@ def sendFile(filename):
     whatsapp_send_button.click()
 
 def main():
+    global browser
     whatsappLogin()
     wait.until(EC.presence_of_element_located((By.XPATH, '//input[contains(@class, "_2zCfw")]')))
     with open('test.csv', 'rU') as csvfile:
@@ -132,15 +135,33 @@ def main():
             try:
                 selectContact(row[0])
                 time.sleep(2)
-                sendMessage('Bot messages')
-                time.sleep(3)
-                # sendImage('instagram.png')
+                sendMessage('Bot message')
                 # time.sleep(2)
+                # sendImage('instagram.png')
+                time.sleep(2)
             except Exception as e:
                 print(e)
                 pass
 
+        # browser.quit()
+
+x = [
+    {
+        "type": "message",
+        "data": "Bot Message",
+    },
+    {
+        "type": "message",
+        "data": "Bot Message 2"
+    },
+    {
+        "type": "message",
+        "data": "Bot Message 3"
+    },
+]
+
 if __name__ == '__main__':
     main()
+    # y = json.loads(json.dumps(x))
+    # print(y[0]['data'])
     
-            
