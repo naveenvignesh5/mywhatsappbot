@@ -28,6 +28,29 @@ doc_filename = None
 unsaved_Contacts = None
 media = None
 
+send_config = [
+    {
+        "type": "message",
+        "data": "Bot Message",
+    },
+    {
+        "type": "message",
+        "data": "Bot Message 1"
+    },
+    {
+        "type": "image",
+        "data": "instagram.png"
+    },
+    {
+        "type": "message",
+        "data": "Bot messages 2"
+    },
+    {
+        "type": "message",
+        "data": "Bot Messages 3"
+    },
+]
+
 def whatsappLogin():
     global wait,browser,Link
     browser = webdriver.Chrome()
@@ -54,11 +77,10 @@ def selectContact(number):
     option.click()
 
     try:
-        input_box = browser.find_element_by_class_name("_2zCfw")
+        input_box = browser.find_element_by_class_name("_13mgZ")
     except NoSuchElementException:
-        # newOption = options[2].find_element_by_class_name("_2UaNq")
-        newOption = options[2]
-        newOption.click()
+        o = options[2]
+        o.click()
 
 def sendMessage(message):
     global wait, browser
@@ -123,9 +145,11 @@ def sendFile(filename):
     whatsapp_send_button = browser.find_element_by_xpath(
         '//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/span[2]/div/div/span')
     whatsapp_send_button.click()
+    print('Sent Image')
 
 def main():
     global browser
+    messageConfig = json.loads(json.dumps(send_config))
     whatsappLogin()
     wait.until(EC.presence_of_element_located((By.XPATH, '//input[contains(@class, "_2zCfw")]')))
     with open('test.csv', 'rU') as csvfile:
@@ -134,34 +158,19 @@ def main():
         for row in reader:
             try:
                 selectContact(row[0])
-                time.sleep(2)
-                sendMessage('Bot message')
-                # time.sleep(2)
-                # sendImage('instagram.png')
-                time.sleep(2)
+                obj = json.loads(json.dumps(send_config))
+                for msg in obj:
+                    if msg['type'] == 'message':
+                        sendMessage(msg['data'])
+                        time.sleep(2)
+                    elif msg['type'] == 'image':
+                        sendImage(msg['data'])
+                        time.sleep(2)
             except Exception as e:
                 print(e)
                 pass
 
-        # browser.quit()
-
-x = [
-    {
-        "type": "message",
-        "data": "Bot Message",
-    },
-    {
-        "type": "message",
-        "data": "Bot Message 2"
-    },
-    {
-        "type": "message",
-        "data": "Bot Message 3"
-    },
-]
+        browser.quit()
 
 if __name__ == '__main__':
     main()
-    # y = json.loads(json.dumps(x))
-    # print(y[0]['data'])
-    
