@@ -6,14 +6,17 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
 
+from db import db
+
 import time
-import datetime
 import os
 import sys
 import csv
 import json
 import Tkinter
+import sqlite3
 
+database = db()
 actionChains = None
 browser = None
 Contact = None
@@ -52,7 +55,7 @@ send_config = [
 ]
 
 def whatsappLogin():
-    global wait,browser,Link
+    global wait,browser,Link, actionChains
     browser = webdriver.Chrome()
     actionChains = ActionChains(browser)
     wait = WebDriverWait(browser, 600)
@@ -73,35 +76,41 @@ def selectContact(number):
     time.sleep(2)
     
     options = browser.find_elements_by_xpath('//div[contains(@class, "X7YrQ")]')
-    option = options[-1]
-    option.click()
 
+    # actionChains.send_keys(Keys.TAB)
+    # actionChains.send_keys(Keys.SPACE)
+    # actionChains.perform()
+
+    for option in reversed(options):
+        try:
+            img = option.find_element_by_css_selector('.jZhyM._13Xdg')
+            url = img.get_attribute('src')
+            if number in url:
+                option.click()
+                time.sleep(2)
+                break
+        except NoSuchElementException:
+            continue
+
+def sendMessage(number,message):
+    global wait, browser, database
     try:
         input_box = browser.find_element_by_class_name("_13mgZ")
-    except NoSuchElementException:
-        o = options[2]
-        o.click()
 
-def sendMessage(message):
-    global wait, browser
-    try:
-        input_box = browser.find_element_by_class_name("_13mgZ")
+        for ch in message:            
+            input_box.send_keys(ch)
 
-        for ch in message:
-            if ch == "\n":
-                btnSend = browser.find_element_by_class_name("_3M-N-")
-                btnSend.click()
-            else:
-                input_box.send_keys(ch)
-
-        input_box.send_keys(Keys.ENTER)
+        btnSend = browser.find_element_by_class_name("_3M-N-")
+        btnSend.click()
+        # input_box.send_keys(Keys.ENTER)
+        database.makeMessageEntry(message, 'text', '', number, 0)
         print("Message sent")
         # time.sleep(5)
     except NoSuchElementException as err:
         print("No such element exception" + str(err))
         return
 
-def sendImage(img): # img - name of image along with ext
+def sendImage(number, img): # img - name of image along with ext
     # Attachment Drop Down Menu
     clipButton = browser.find_element_by_xpath(
         '//*[@id="main"]/header/div[3]/div/div[2]/div/span')
@@ -148,7 +157,7 @@ def sendFile(filename):
     print('Sent Image')
 
 def main():
-    global browser
+    global browser, database
     messageConfig = json.loads(json.dumps(send_config))
     whatsappLogin()
     wait.until(EC.presence_of_element_located((By.XPATH, '//input[contains(@class, "_2zCfw")]')))
@@ -156,21 +165,60 @@ def main():
         reader = csv.reader(csvfile, delimiter=' ')
         
         for row in reader:
-            try:
-                selectContact(row[0])
-                obj = json.loads(json.dumps(send_config))
-                for msg in obj:
-                    if msg['type'] == 'message':
-                        sendMessage(msg['data'])
-                        time.sleep(2)
-                    elif msg['type'] == 'image':
-                        sendImage(msg['data'])
-                        time.sleep(2)
-            except Exception as e:
-                print(e)
-                pass
+            if not database.isEntryMade(row[0]):
+                try:
+                    selectContact(row[0])
+                    time.sleep(2)
+                    with open('message.json', 'r') as f:
+                        obj = json.load(f)
+                        for msg in obj:
+                            if msg['type'] == 'message':
+                                sendMessage(row[0], msg['data'])
+                                time.sleep(2)
+                            elif msg['type'] == 'image':
+                                sendImage(row[0], msg['data'])
+                                time.sleep(2)
+                except Exception as e:
+                    print(e)
+                    pass
 
         browser.quit()
+
+def dbSchemaCreate():
+    global conn
+    open('data.db', 'w+') # create data.db
+    conn = sqlite3.connect('data.db')
+    conn.executescript('''
+        create table if not exists messages (
+            id integer primary key autoincrement not null,
+            name text,
+            phone text not null,
+            message_type text,
+            timeStamp text not null,
+            message_id integer not null,
+            campaign_id integer not null
+        );
+
+        create table if not exists users (
+            id integer primary key autoincrement not null,
+            name text not null,
+            phone text not null,
+            user_type text not null,
+            created_at text not null
+        );
+
+        create table if not exists campaigns (
+            id integer primary key autoincrement not null,
+            name text not null,
+            sent_at text
+        );
+
+        create table if not exists message (
+            id integer primary key autoincrement not null,
+            data text not null,
+            type text not null
+        );
+    ''')
 
 if __name__ == '__main__':
     main()

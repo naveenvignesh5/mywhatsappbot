@@ -1,0 +1,18 @@
+[
+    {
+        "type": "message",
+        "data": "New Bot Message"
+    },
+    {
+        "type": "message",
+        "data": "New Bot Message 1"
+    },
+    {
+        "type": "message",
+        "data": "New Bot messages 2"
+    },
+    {
+        "type": "message",
+        "data": "New Bot Messages 3"
+    }
+]
