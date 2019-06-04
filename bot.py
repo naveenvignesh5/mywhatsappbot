@@ -184,41 +184,5 @@ def main():
 
         browser.quit()
 
-def dbSchemaCreate():
-    global conn
-    open('data.db', 'w+') # create data.db
-    conn = sqlite3.connect('data.db')
-    conn.executescript('''
-        create table if not exists messages (
-            id integer primary key autoincrement not null,
-            name text,
-            phone text not null,
-            message_type text,
-            timeStamp text not null,
-            message_id integer not null,
-            campaign_id integer not null
-        );
-
-        create table if not exists users (
-            id integer primary key autoincrement not null,
-            name text not null,
-            phone text not null,
-            user_type text not null,
-            created_at text not null
-        );
-
-        create table if not exists campaigns (
-            id integer primary key autoincrement not null,
-            name text not null,
-            sent_at text
-        );
-
-        create table if not exists message (
-            id integer primary key autoincrement not null,
-            data text not null,
-            type text not null
-        );
-    ''')
-
 if __name__ == '__main__':
     main()
