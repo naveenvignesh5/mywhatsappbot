@@ -69,7 +69,7 @@ def whatsappLogin():
 def selectContact(number):
     global wait, browser, actionChains, invalidFlag
     # x_arg = '//span[contains(@title,' + contact + ')]'
-    search_box = browser.find_element_by_xpath('//input[contains(@class, "_2zCfw")]')
+    search_box = browser.find_element_by_xpath('//input[@title="Search or start new chat"]')
     search_box.click()
     search_box.clear()
     
@@ -78,7 +78,7 @@ def selectContact(number):
 
     time.sleep(2)
     
-    options = browser.find_elements_by_xpath('//div[contains(@class, "X7YrQ")]')
+    options = browser.find_elements_by_xpath('//div[@id="pane-side"]/div/div/div/*')
 
     # actionChains.send_keys(Keys.TAB)
     # actionChains.send_keys(Keys.SPACE)
@@ -87,7 +87,7 @@ def selectContact(number):
     invalidFlag = True
     for option in reversed(options):
         try:
-            img = option.find_element_by_css_selector('.jZhyM._13Xdg')
+            img = option.find_elements_by_css_selector('img')[0]
             url = img.get_attribute('src')
             if number in url:
                 invalidFlag = False
@@ -100,16 +100,16 @@ def selectContact(number):
 def sendMessage(number,message):
     global wait, browser, database, invalidFlag
     try:
-        input_box = browser.find_element_by_class_name("_13mgZ")
+        input_box = browser.find_element_by_xpath('//div[@id="main"]/footer/div[1]/div[2]/div/div[2]')
         # input_box.click()
         # for ch in message:            
         #     input_box.send_keys(ch)
         input_box.send_keys(message[0])
-        browser.execute_script("document.getElementsByClassName('_3u328 copyable-text selectable-text')[0].innerText += '" + message[1:] + "';")
+        browser.execute_script("arguments[0].innerText += '" + message[1:] + "';", input_box)
         input_box.send_keys(Keys.SPACE)
         input_box.send_keys(Keys.BACKSPACE)
 
-        btnSend = browser.find_element_by_class_name("_3M-N-")
+        btnSend = browser.find_element_by_xpath('//div[@id="main"]/footer/div[1]/div[3]/button')
         btnSend.click()
         
         print("Message sent")
@@ -168,7 +168,7 @@ def main():
     global browser, database, invalidFlag
     messageConfig = json.loads(json.dumps(send_config))
     whatsappLogin()
-    wait.until(EC.presence_of_element_located((By.XPATH, '//input[contains(@class, "_2zCfw")]')))
+    wait.until(EC.presence_of_element_located((By.XPATH, '//input[@title="Search or start new chat"]')))
     with open('contacts.csv', 'r') as csvfile:
         reader = csv.reader(csvfile, delimiter=' ')
         
