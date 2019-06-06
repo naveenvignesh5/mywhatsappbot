@@ -59,6 +59,7 @@ send_config = [
 def whatsappLogin():
     global wait,browser,Link, actionChains
     browser = webdriver.Chrome()
+    # browser = webdriver.Firefox()
     actionChains = ActionChains(browser)
     wait = WebDriverWait(browser, 600)
     browser.get(Link)
@@ -100,14 +101,17 @@ def sendMessage(number,message):
     global wait, browser, database, invalidFlag
     try:
         input_box = browser.find_element_by_class_name("_13mgZ")
-
-        for ch in message:            
-            input_box.send_keys(ch)
+        # input_box.click()
+        # for ch in message:            
+        #     input_box.send_keys(ch)
+        input_box.send_keys(message[0])
+        browser.execute_script("document.getElementsByClassName('_3u328 copyable-text selectable-text')[0].innerText += '" + message[1:] + "';")
+        input_box.send_keys(Keys.SPACE)
+        input_box.send_keys(Keys.BACKSPACE)
 
         btnSend = browser.find_element_by_class_name("_3M-N-")
         btnSend.click()
-        # input_box.send_keys(Keys.ENTER)
-        database.makeMessageEntry(message, 'text', '', number, 0)
+        
         print("Message sent")
         # time.sleep(5)
     except NoSuchElementException as err:

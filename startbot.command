@@ -1,3 +1,3 @@
 #!/bin/bash
 cd -- "$(dirname -- "$0")"
-python bot.py
+python3 bot.py
