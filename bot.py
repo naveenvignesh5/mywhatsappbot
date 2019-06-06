@@ -163,7 +163,7 @@ def main():
     messageConfig = json.loads(json.dumps(send_config))
     whatsappLogin()
     wait.until(EC.presence_of_element_located((By.XPATH, '//input[contains(@class, "_2zCfw")]')))
-    with open('test.csv', 'rU') as csvfile:
+    with open('contacts.csv', 'rU') as csvfile:
         reader = csv.reader(csvfile, delimiter=' ')
         
         for row in reader:
