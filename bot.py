@@ -15,7 +15,6 @@ import os
 import sys
 import csv
 import json
-import Tkinter
 import sqlite3
 
 database = db()
@@ -24,6 +23,7 @@ browser = None
 Contact = None
 message = None
 messages = None
+invalidFlag = True
 conn = None
 Link = "https://web.whatsapp.com/"
 wait = None
@@ -66,7 +66,7 @@ def whatsappLogin():
     print("QR scanned")
 
 def selectContact(number):
-    global wait, browser, actionChains
+    global wait, browser, actionChains, invalidFlag
     # x_arg = '//span[contains(@title,' + contact + ')]'
     search_box = browser.find_element_by_xpath('//input[contains(@class, "_2zCfw")]')
     search_box.click()
@@ -83,11 +83,13 @@ def selectContact(number):
     # actionChains.send_keys(Keys.SPACE)
     # actionChains.perform()
 
+    invalidFlag = True
     for option in reversed(options):
         try:
             img = option.find_element_by_css_selector('.jZhyM._13Xdg')
             url = img.get_attribute('src')
             if number in url:
+                invalidFlag = False
                 option.click()
                 time.sleep(2)
                 break
@@ -95,7 +97,7 @@ def selectContact(number):
             continue
 
 def sendMessage(number,message):
-    global wait, browser, database
+    global wait, browser, database, invalidFlag
     try:
         input_box = browser.find_element_by_class_name("_13mgZ")
 
@@ -159,11 +161,11 @@ def sendFile(filename):
     print('Sent Image')
 
 def main():
-    global browser, database
+    global browser, database, invalidFlag
     messageConfig = json.loads(json.dumps(send_config))
     whatsappLogin()
     wait.until(EC.presence_of_element_located((By.XPATH, '//input[contains(@class, "_2zCfw")]')))
-    with open('contacts.csv', 'rU') as csvfile:
+    with open('contacts.csv', 'r') as csvfile:
         reader = csv.reader(csvfile, delimiter=' ')
         
         for row in reader:
@@ -171,20 +173,19 @@ def main():
                 try:
                     selectContact(row[0])
                     time.sleep(2)
-                    with open('message.csv', 'rU') as f:
-                        obj = csv.reader(f, delimiter=',')
-                        for msg in obj:
-                            if msg[0] == 'text':
-                                sendMessage(row[0], msg[1])
-                                time.sleep(2)
-                            elif msg[0] == 'image':
-                                sendImage(row[0], msg[1])
-                                time.sleep(2)
+                    if not invalidFlag:
+                        with open('message.csv', 'r', encoding="utf8", errors="") as f:
+                            obj = csv.reader(f, delimiter=',')
+                            for msg in obj:
+                                if msg[0] == 'text':
+                                    sendMessage(row[0], msg[1])
+                                    time.sleep(2)
+                                elif msg[0] == 'image':
+                                    sendImage(row[0], msg[1])
+                                    time.sleep(3)
                 except Exception as e:
                     print(e)
                     pass
-
-        browser.quit()
 
 if __name__ == '__main__':
     main()
