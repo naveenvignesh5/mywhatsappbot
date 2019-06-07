@@ -33,29 +33,6 @@ doc_filename = None
 unsaved_Contacts = None
 media = None
 
-send_config = [
-    {
-        "type": "message",
-        "data": "Bot Message",
-    },
-    {
-        "type": "message",
-        "data": "Bot Message 1"
-    },
-    {
-        "type": "image",
-        "data": "instagram.png"
-    },
-    {
-        "type": "message",
-        "data": "Bot messages 2"
-    },
-    {
-        "type": "message",
-        "data": "Bot Messages 3"
-    },
-]
-
 def whatsappLogin():
     global wait,browser,Link, actionChains
     browser = webdriver.Chrome()
@@ -87,7 +64,7 @@ def selectContact(number):
     invalidFlag = True
     for option in reversed(options):
         try:
-            img = option.find_elements_by_css_selector('img')[0]
+            img = option.find_element_by_tag_name('img')
             url = img.get_attribute('src')
             if number in url:
                 invalidFlag = False
@@ -101,9 +78,11 @@ def sendMessage(number,message):
     global wait, browser, database, invalidFlag
     try:
         input_box = browser.find_element_by_xpath('//div[@id="main"]/footer/div[1]/div[2]/div/div[2]')
+        
         # input_box.click()
         # for ch in message:            
         #     input_box.send_keys(ch)
+
         input_box.send_keys(message[0])
         browser.execute_script("arguments[0].innerText += '" + message[1:] + "';", input_box)
         input_box.send_keys(Keys.SPACE)
@@ -113,6 +92,7 @@ def sendMessage(number,message):
         btnSend.click()
         
         print("Message sent")
+        database.makeMessageEntry(message, 'text', '', number, 0)
         # time.sleep(5)
     except NoSuchElementException as err:
         print("No such element exception" + str(err))
@@ -137,6 +117,7 @@ def sendImage(number, img): # img - name of image along with ext
     whatsapp_send_button = browser.find_element_by_xpath(
         '//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/span[2]/div/div/span')
     whatsapp_send_button.click()
+    database.makeMessageEntry(img, 'image', '', number, 0)
     # Controlling windows dialog
     
 def sendFile(filename):
@@ -166,7 +147,6 @@ def sendFile(filename):
 
 def main():
     global browser, database, invalidFlag
-    messageConfig = json.loads(json.dumps(send_config))
     whatsappLogin()
     wait.until(EC.presence_of_element_located((By.XPATH, '//input[@title="Search or start new chat"]')))
     with open('contacts.csv', 'r') as csvfile:

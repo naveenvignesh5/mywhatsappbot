@@ -1,4 +1,7 @@
-# sqlite database
+# sqlite database files
 *.db
 
 Media/
+
+# osx
+.DS_Store
