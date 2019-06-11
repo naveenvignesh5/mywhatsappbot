@@ -57,16 +57,14 @@ def selectContact(number):
     
     options = browser.find_elements_by_xpath('//div[@id="pane-side"]/div/div/div/*')
 
-    # actionChains.send_keys(Keys.TAB)
-    # actionChains.send_keys(Keys.SPACE)
-    # actionChains.perform()
-
     invalidFlag = True
     for option in reversed(options):
         try:
+            userTypeSpan = option.find_element_by_xpath('.//div/div/div/div/div/span')            
+            userType = userTypeSpan.get_attribute('data-icon')
             img = option.find_element_by_tag_name('img')
             url = img.get_attribute('src')
-            if number in url:
+            if number in url and userType == 'default-user':
                 invalidFlag = False
                 option.click()
                 time.sleep(2)
@@ -79,10 +77,6 @@ def sendMessage(number,message):
     try:
         input_box = browser.find_element_by_xpath('//div[@id="main"]/footer/div[1]/div[2]/div/div[2]')
         
-        # input_box.click()
-        # for ch in message:            
-        #     input_box.send_keys(ch)
-
         input_box.send_keys(message[0])
         browser.execute_script("arguments[0].innerText += '" + message[1:] + "';", input_box)
         input_box.send_keys(Keys.SPACE)
