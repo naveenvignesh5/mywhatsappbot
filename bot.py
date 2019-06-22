@@ -60,7 +60,7 @@ def selectContact(number):
     invalidFlag = True
     for option in reversed(options):
         try:
-            userTypeSpan = option.find_element_by_xpath('.//div/div/div/div/div/span')            
+            userTypeSpan = option.find_element_by_xpath('.//div/div/div[1]/div/span')            
             userType = userTypeSpan.get_attribute('data-icon')
             img = option.find_element_by_tag_name('img')
             url = img.get_attribute('src')
@@ -69,7 +69,8 @@ def selectContact(number):
                 option.click()
                 time.sleep(2)
                 break
-        except NoSuchElementException:
+        except NoSuchElementException as e:
+            print(e)
             continue
 
 def sendMessage(number,message):
@@ -78,7 +79,7 @@ def sendMessage(number,message):
         input_box = browser.find_element_by_xpath('//div[@id="main"]/footer/div[1]/div[2]/div/div[2]')
         
         input_box.send_keys(message[0])
-        browser.execute_script("arguments[0].innerText += '" + message[1:] + "';", input_box)
+        browser.execute_script('arguments[0].innerText += "' + str(message[1:]) + '";', input_box)
         input_box.send_keys(Keys.SPACE)
         input_box.send_keys(Keys.BACKSPACE)
 
@@ -92,7 +93,7 @@ def sendMessage(number,message):
         print("No such element exception" + str(err))
         return
 
-def sendImage(number, img): # img - name of image along with ext
+def sendMedia(number, img): # img - name of image along with ext
     # Attachment Drop Down Menu
     clipButton = browser.find_element_by_xpath(
         '//*[@id="main"]/header/div[3]/div/div[2]/div/span')
@@ -109,7 +110,7 @@ def sendImage(number, img): # img - name of image along with ext
 
     time.sleep(3)
     whatsapp_send_button = browser.find_element_by_xpath(
-        '//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/span[2]/div/div/span')
+        '//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/span[2]/div/div')
     whatsapp_send_button.click()
     database.makeMessageEntry(img, 'image', '', number, 0)
     # Controlling windows dialog
@@ -155,11 +156,11 @@ def main():
                         with open('message.csv', 'r', encoding="utf8", errors="") as f:
                             obj = csv.reader(f, delimiter=',')
                             for msg in obj:
-                                if msg[0] == 'text':
+                                if msg[0] in ('text', 'word'):
                                     sendMessage(row[0], msg[1])
                                     time.sleep(2)
-                                elif msg[0] == 'image':
-                                    sendImage(row[0], msg[1])
+                                elif msg[0] in ('image', 'video', 'media'):
+                                    sendMedia(row[0], msg[1])
                                     time.sleep(3)
                 except Exception as e:
                     print(e)
