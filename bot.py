@@ -69,9 +69,25 @@ def selectContact(number):
                 option.click()
                 time.sleep(2)
                 break
-        except NoSuchElementException as e:
-            print(e)
+        except NoSuchElementException as e1:
             continue
+
+    try:
+        input_box = browser.find_element_by_xpath('//div[@id="main"]/footer/div[1]/div[2]/div/div[2]')
+    except NoSuchElementException as ex:
+        print('fail case', ex)
+        options[-1].click()
+        time.sleep(2)
+        try:
+            input_box = browser.find_element_by_xpath('//div[@id="main"]/footer/div[1]/div[2]/div/div[2]')
+            invalidFlag = False
+        except NoSuchElementException:
+            options[-2].click()
+            try:
+                input_box = browser.find_element_by_xpath('//div[@id="main"]/footer/div[1]/div[2]/div/div[2]')
+                invalidFlag = False
+            except NoSuchElementException:
+                pass
 
 def sendMessage(number,message):
     global wait, browser, database, invalidFlag
