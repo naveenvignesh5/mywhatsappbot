@@ -72,23 +72,11 @@ def selectContact(number):
         except NoSuchElementException as e1:
             continue
 
-    try:
-        input_box = browser.find_element_by_xpath('//div[@id="main"]/footer/div[1]/div[2]/div/div[2]')
-    except NoSuchElementException as ex:
-        print('fail case', ex)
+    if invalidFlag and not database.isEntryMade(number):
         options[-1].click()
         time.sleep(2)
-        try:
-            input_box = browser.find_element_by_xpath('//div[@id="main"]/footer/div[1]/div[2]/div/div[2]')
-            invalidFlag = False
-        except NoSuchElementException:
-            options[-2].click()
-            try:
-                input_box = browser.find_element_by_xpath('//div[@id="main"]/footer/div[1]/div[2]/div/div[2]')
-                invalidFlag = False
-            except NoSuchElementException:
-                pass
-
+        invalidFlag = False
+    
 def sendMessage(number,message):
     global wait, browser, database, invalidFlag
     try:
@@ -125,8 +113,9 @@ def sendMedia(number, img): # img - name of image along with ext
     mediaButtonInput.send_keys(image_path)
 
     time.sleep(3)
-    whatsapp_send_button = browser.find_element_by_xpath(
-        '//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/span[2]/div/div')
+    whatsapp_send_button_path = '//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/span[2]/div/div'
+    wait.until(EC.presence_of_element_located((By.XPATH, whatsapp_send_button_path)))
+    whatsapp_send_button = browser.find_element_by_xpath(whatsapp_send_button_path)
     whatsapp_send_button.click()
     database.makeMessageEntry(img, 'image', '', number, 0)
     # Controlling windows dialog
@@ -151,8 +140,9 @@ def sendFile(filename):
     autoit.control_click("Open", "Button1")
 
     time.sleep(3)
-    whatsapp_send_button = browser.find_element_by_xpath(
-        '//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/span[2]/div/div/span')
+    whatsapp_send_button_path = '//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/span[2]/div/div'
+    wait.until(EC.presence_of_element_located((By.XPATH, whatsapp_send_button_path)))
+    whatsapp_send_button = browser.find_element_by_xpath(whatsapp_send_button_path)
     whatsapp_send_button.click()
     print('Sent Image')
 
@@ -162,7 +152,6 @@ def main():
     wait.until(EC.presence_of_element_located((By.XPATH, '//input[@title="Search or start new chat"]')))
     with open('contacts.csv', 'r') as csvfile:
         reader = csv.reader(csvfile, delimiter=' ')
-        
         for row in reader:
             if not database.isEntryMade(row[0]):
                 try:
