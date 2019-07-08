@@ -43,15 +43,55 @@ def whatsappLogin():
     browser.maximize_window()
     print("QR scanned")
 
-def selectContact(number):
+def selectContactViaName(name):
+    global wait, browser, actionChains, invalidFlag
+
+    target = './/span[contains(@title,"'+name+'")]'
+
+    try:
+        wait.until(EC.presence_of_element_located(By.XPATH, target))
+    except:
+        search_box = browser.find_element_by_xpath('//input[@title="Search or start new chat"]')
+        search_box.click()
+        search_box.clear()
+        
+        for ch in str(name):
+            search_box.send_keys(ch)
+
+        time.sleep(2)
+
+    invalidFlag = True
+    try:
+        options = browser.find_elements_by_xpath('//div[@id="pane-side"]/div/div/div/*')
+
+        for option in reversed(options):
+            try:
+                userTypeSpan = option.find_element_by_xpath('.//div/div/div[1]/div/span')            
+                userType = userTypeSpan.get_attribute('data-icon')
+
+                if userType == 'default-user':
+                    span = option.find_element_by_xpath(target)
+                    span.click()
+                    invalidFlag = False
+                    time.sleep(2)
+            except:
+                pass
+
+    except NoSuchElementException as e:
+        print(e)
+        pass
+
+def selectContactViaNumber(number):
     global wait, browser, actionChains, invalidFlag
     # x_arg = '//span[contains(@title,' + contact + ')]'
     search_box = browser.find_element_by_xpath('//input[@title="Search or start new chat"]')
     search_box.click()
     search_box.clear()
     
-    for ch in str(number):
-        search_box.send_keys(ch)
+    browser.execute_script('arguments[0].innerText += "' + str(message[1:]) + '";', search_box)
+
+    # for ch in str(number):
+    #     search_box.send_keys(ch)
 
     time.sleep(2)
     
@@ -62,22 +102,37 @@ def selectContact(number):
         try:
             userTypeSpan = option.find_element_by_xpath('.//div/div/div[1]/div/span')            
             userType = userTypeSpan.get_attribute('data-icon')
-            img = option.find_element_by_tag_name('img')
-            url = img.get_attribute('src')
-            if number in url and userType == 'default-user':
+            try:
+                img = option.find_element_by_tag_name('img')
+                url = img.get_attribute('src')
+                if number in url and userType == 'default-user':
+                    invalidFlag = False
+                    option.click()
+                    time.sleep(2)
+                    break
+            except NoSuchElementException as ex:
+                pass
+                
+            if userType == 'default-user':
                 invalidFlag = False
                 option.click()
                 time.sleep(2)
                 break
         except NoSuchElementException as e1:
+            # try:
+            #     userTypeSpan = option.find_element_by_xpath('.//div/div/div[1]/div/span')            
+            #     userType = userTypeSpan.get_attribute('data-icon')
+                
+            # except NoSuchElementException as e2:
+            invalidFlag = True
             continue
 
-    if invalidFlag and not database.isEntryMade(number):
-        options[-1].click()
-        time.sleep(2)
-        invalidFlag = False
+    # if invalidFlag and not database.isEntryMade(number):
+    #     options[-1].click()
+    #     time.sleep(2)
+    #     invalidFlag = False
     
-def sendMessage(number,message):
+def sendMessage(name, number,message):
     global wait, browser, database, invalidFlag
     try:
         input_box = browser.find_element_by_xpath('//div[@id="main"]/footer/div[1]/div[2]/div/div[2]')
@@ -97,7 +152,7 @@ def sendMessage(number,message):
         print("No such element exception" + str(err))
         return
 
-def sendMedia(number, img): # img - name of image along with ext
+def sendMedia(name, number, img): # img - name of image along with ext
     # Attachment Drop Down Menu
     clipButton = browser.find_element_by_xpath(
         '//*[@id="main"]/header/div[3]/div/div[2]/div/span')
@@ -120,52 +175,26 @@ def sendMedia(number, img): # img - name of image along with ext
     database.makeMessageEntry(img, 'image', '', number, 0)
     # Controlling windows dialog
     
-def sendFile(filename):
-    # Attachment Drop Down Menu
-    clipButton = browser.find_element_by_xpath(
-        '//*[@id="main"]/header/div[3]/div/div[2]/div/span')
-    clipButton.click()
-    time.sleep(1)
-
-    # To send a Document(PDF, Word file, PPT)
-    docButton = browser.find_element_by_xpath(
-        '//*[@id="main"]/header/div[3]/div/div[2]/span/div/div/ul/li[3]/button')
-    docButton.click()
-    time.sleep(1)
-
-    docPath = os.getcwd() + "\\Documents\\" + filename
-
-    autoit.control_focus("Open", "Edit1")
-    autoit.control_set_text("Open", "Edit1", (docPath))
-    autoit.control_click("Open", "Button1")
-
-    time.sleep(3)
-    whatsapp_send_button_path = '//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/span[2]/div/div'
-    wait.until(EC.presence_of_element_located((By.XPATH, whatsapp_send_button_path)))
-    whatsapp_send_button = browser.find_element_by_xpath(whatsapp_send_button_path)
-    whatsapp_send_button.click()
-    print('Sent Image')
-
 def main():
     global browser, database, invalidFlag
     whatsappLogin()
     wait.until(EC.presence_of_element_located((By.XPATH, '//input[@title="Search or start new chat"]')))
     with open('contacts.csv', 'r') as csvfile:
-        reader = csv.reader(csvfile, delimiter=' ')
+        reader = csv.reader(csvfile, delimiter=',')
         for row in reader:
             if not database.isEntryMade(row[0]):
                 try:
-                    selectContact(row[0])
+                    selectContactViaName(row[0])
                     time.sleep(2)
                     if not invalidFlag:
                         with open('message.csv', 'r', encoding="utf8", errors="") as f:
                             obj = csv.reader(f, delimiter=',')
                             for msg in obj:
                                 if msg[0] in ('text', 'word'):
-                                    sendMessage(row[0], msg[1])
+                                    sendMessage(row[0], row[1], msg[1])
                                     time.sleep(2)
                                 elif msg[0] in ('image', 'video', 'media'):
-                                    sendMedia(row[0], msg[1])
+                                    sendMedia(row[0], row[1], msg[1])
                                     time.sleep(3)
                 except Exception as e:
                     print(e)
