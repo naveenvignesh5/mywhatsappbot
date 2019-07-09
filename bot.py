@@ -55,12 +55,18 @@ def selectContactViaName(name):
         search_box.click()
         search_box.clear()
         
-        for ch in str(name):
-            search_box.send_keys(ch)
+        search_box.send_keys(name[0])
+        browser.execute_script('arguments[0].value += "' + str(name[1:]) + '";', search_box)
+        search_box.send_keys(Keys.SPACE)
+        search_box.send_keys(Keys.BACKSPACE)
+
+        # for ch in str(name):
+        #     search_box.send_keys(ch)
 
         time.sleep(2)
 
     invalidFlag = True
+
     try:
         options = browser.find_elements_by_xpath('//div[@id="pane-side"]/div/div/div/*')
 
@@ -73,7 +79,7 @@ def selectContactViaName(name):
                     span = option.find_element_by_xpath(target)
                     span.click()
                     invalidFlag = False
-                    time.sleep(2)
+                    time.sleep(1)
             except:
                 pass
 
@@ -182,7 +188,7 @@ def main():
     with open('contacts.csv', 'r') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
         for row in reader:
-            if not database.isEntryMade(row[0]):
+            if not database.isEntryMade(row[1]): # check by the number if entry is made 
                 try:
                     selectContactViaName(row[0])
                     time.sleep(2)
