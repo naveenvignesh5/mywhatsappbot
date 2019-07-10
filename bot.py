@@ -87,6 +87,14 @@ def selectContactViaName(name):
         print(e)
         pass
 
+    try:
+        mainEl = browser.find_element_by_xpath('//div[@id="main"]')
+        mainEl.find_element_by_xpath(target)
+    except NoSuchElementException as ex:
+        invalidFlag = True
+        print(ex)
+        pass
+
 def selectContactViaNumber(number):
     global wait, browser, actionChains, invalidFlag
     # x_arg = '//span[contains(@title,' + contact + ')]'
