@@ -46,7 +46,7 @@ def whatsappLogin():
 def selectContactViaName(name):
     global wait, browser, actionChains, invalidFlag
 
-    target = './/span[contains(@title,"'+name+'")]'
+    target = './/span[@title="'+name+'"]'
 
     try:
         wait.until(EC.presence_of_element_located(By.XPATH, target))
@@ -104,9 +104,6 @@ def selectContactViaNumber(number):
     
     browser.execute_script('arguments[0].innerText += "' + str(message[1:]) + '";', search_box)
 
-    # for ch in str(number):
-    #     search_box.send_keys(ch)
-
     time.sleep(2)
     
     options = browser.find_elements_by_xpath('//div[@id="pane-side"]/div/div/div/*')
@@ -156,11 +153,11 @@ def sendMessage(name, number,message):
         input_box.send_keys(Keys.SPACE)
         input_box.send_keys(Keys.BACKSPACE)
 
-        btnSend = browser.find_element_by_xpath('//div[@id="main"]/footer/div[1]/div[3]/button')
-        btnSend.click()
+        # btnSend = browser.find_element_by_xpath('//div[@id="main"]/footer/div[1]/div[3]/button')
+        # btnSend.click()
         
         print("Message sent")
-        database.makeMessageEntry(message, 'text', '', number, 0)
+        # database.makeMessageEntry(message, 'text', '', number, 0)
         # time.sleep(5)
     except NoSuchElementException as err:
         print("No such element exception" + str(err))
@@ -189,6 +186,28 @@ def sendMedia(name, number, img): # img - name of image along with ext
     database.makeMessageEntry(img, 'image', '', number, 0)
     # Controlling windows dialog
     
+def sendFile(name, number, filename): # img - name of image along with ext
+    # Attachment Drop Down Menu
+    clipButton = browser.find_element_by_xpath(
+        '//*[@id="main"]/header/div[3]/div/div[2]/div/span')
+    clipButton.click()
+    time.sleep(1)
+
+    # To send Videos and Images.
+    fileButtonInput = browser.find_element_by_xpath(
+        '//*[@id="main"]/header/div[3]/div/div[2]/span/div/div/ul/li[3]/button/input')
+    
+    file_path = os.getcwd() + '/Media/' + filename
+
+    fileButtonInput.send_keys(file_path)
+
+    time.sleep(3)
+    whatsapp_send_button_path = '//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/span[2]/div/div'
+    wait.until(EC.presence_of_element_located((By.XPATH, whatsapp_send_button_path)))
+    whatsapp_send_button = browser.find_element_by_xpath(whatsapp_send_button_path)
+    whatsapp_send_button.click()
+    database.makeMessageEntry(filename, 'file', '', number, 0)
+
 def main():
     global browser, database, invalidFlag
     whatsappLogin()
@@ -207,9 +226,11 @@ def main():
                                 if msg[0] in ('text', 'word'):
                                     sendMessage(row[0], row[1], msg[1])
                                     time.sleep(2)
-                                elif msg[0] in ('image', 'video', 'media'):
-                                    sendMedia(row[0], row[1], msg[1])
-                                    time.sleep(3)
+                                # elif msg[0] in ('image', 'video', 'media'):
+                                #     sendMedia(row[0], row[1], msg[1])
+                                #     time.sleep(3)
+                                # elif msg[0] in ('file'):
+                                #     sendFile(row[0], row[1], msg[1]);
                 except Exception as e:
                     print(e)
                     pass
