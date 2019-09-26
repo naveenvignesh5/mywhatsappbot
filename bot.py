@@ -153,11 +153,11 @@ def sendMessage(name, number,message):
         input_box.send_keys(Keys.SPACE)
         input_box.send_keys(Keys.BACKSPACE)
 
-        # btnSend = browser.find_element_by_xpath('//div[@id="main"]/footer/div[1]/div[3]/button')
-        # btnSend.click()
+        btnSend = browser.find_element_by_xpath('//div[@id="main"]/footer/div[1]/div[3]/button')
+        btnSend.click()
         
+        database.makeMessageEntry(message, 'text', name, number, 0)
         print("Message sent")
-        # database.makeMessageEntry(message, 'text', '', number, 0)
         # time.sleep(5)
     except NoSuchElementException as err:
         print("No such element exception" + str(err))
@@ -183,8 +183,10 @@ def sendMedia(name, number, img): # img - name of image along with ext
     wait.until(EC.presence_of_element_located((By.XPATH, whatsapp_send_button_path)))
     whatsapp_send_button = browser.find_element_by_xpath(whatsapp_send_button_path)
     whatsapp_send_button.click()
-    database.makeMessageEntry(img, 'image', '', number, 0)
+    database.makeMessageEntry(img, 'image', name, number, 0)
     # Controlling windows dialog
+
+    print('media sent')
     
 def sendFile(name, number, filename): # img - name of image along with ext
     # Attachment Drop Down Menu
@@ -206,7 +208,9 @@ def sendFile(name, number, filename): # img - name of image along with ext
     wait.until(EC.presence_of_element_located((By.XPATH, whatsapp_send_button_path)))
     whatsapp_send_button = browser.find_element_by_xpath(whatsapp_send_button_path)
     whatsapp_send_button.click()
-    database.makeMessageEntry(filename, 'file', '', number, 0)
+    database.makeMessageEntry(filename, 'file', name, number, 0)
+
+    print('file sent')
 
 def main():
     global browser, database, invalidFlag
@@ -221,16 +225,16 @@ def main():
                     time.sleep(2)
                     if not invalidFlag:
                         with open('message.csv', 'r', encoding="utf8", errors="") as f:
-                            obj = csv.reader(f, delimiter=',')
+                            obj = csv.reader(f, delimiter='|')
                             for msg in obj:
                                 if msg[0] in ('text', 'word'):
                                     sendMessage(row[0], row[1], msg[1])
                                     time.sleep(2)
-                                # elif msg[0] in ('image', 'video', 'media'):
-                                #     sendMedia(row[0], row[1], msg[1])
-                                #     time.sleep(3)
-                                # elif msg[0] in ('file'):
-                                #     sendFile(row[0], row[1], msg[1]);
+                                elif msg[0] in ('image', 'video', 'media'):
+                                    sendMedia(row[0], row[1], msg[1])
+                                    time.sleep(3)
+                                elif msg[0] in ('file'):
+                                    sendFile(row[0], row[1], msg[1]);
                 except Exception as e:
                     print(e)
                     pass
