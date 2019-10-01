@@ -40,3 +40,9 @@ contact_name, contact_number
 2.  New browser **window (not tab)** will be opened.
 3.  Scan QR Code for whatsapp
 4.  Messages will be sent and after being sent browser will close automatically.
+
+### Generate Windows Executable
+
+```shell
+$ python setup.py build
+```
