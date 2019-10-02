@@ -5,3 +5,6 @@ Media/
 
 # osx
 .DS_Store
+
+# windows build
+build/

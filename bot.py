@@ -43,9 +43,11 @@ def whatsappLogin():
     browser.maximize_window()
     print("QR scanned")
 
-def selectContactViaName(name):
+def selectContactViaName(username):
     global wait, browser, actionChains, invalidFlag
 
+    name = username.strip()
+    
     target = './/span[@title="'+name+'"]'
 
     try:
@@ -55,10 +57,11 @@ def selectContactViaName(name):
         search_box.click()
         search_box.clear()
         
-        search_box.send_keys(name[0])
-        browser.execute_script('arguments[0].value += "' + str(name[1:]) + '";', search_box)
-        search_box.send_keys(Keys.SPACE)
-        search_box.send_keys(Keys.BACKSPACE)
+        browser.execute_script('arguments[0].value += "' + str(name[:-1]) + '";', search_box)
+        search_box.send_keys(name[-1])
+
+        # search_box.send_keys(Keys.SPACE)
+        # search_box.send_keys(Keys.BACKSPACE)
 
         # for ch in str(name):
         #     search_box.send_keys(ch)
