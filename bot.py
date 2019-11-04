@@ -222,7 +222,7 @@ def main():
     with open('contacts.csv', 'r') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
         for row in reader:
-            if not database.isEntryMade(row[1]): # check by the number if entry is made 
+            if not database.isEntryMade(row[0], row[1]): # check by the number if entry is made 
                 try:
                     selectContactViaName(row[0])
                     time.sleep(2)

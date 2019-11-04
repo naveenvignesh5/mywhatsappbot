@@ -36,12 +36,12 @@ class db:
             );
         ''')
     
-    def isEntryMade(self, number):
+    def isEntryMade(self, name, number):
         today = str(datetime.datetime.now().date())
         cur = self.conn.cursor()
         rows = cur.execute('''
-            select count(*) from messages where phone = ? and date(timeStamp) = ?
-        ''', (number, today))
+            select count(*) from messages where (name = ? or phone = ?) and date(timeStamp) = ?
+        ''', (name, number, today))
         flag = False
         
         for row in rows:
