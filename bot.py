@@ -146,7 +146,7 @@ def selectContactViaNumber(number):
     #     time.sleep(2)
     #     invalidFlag = False
     
-def sendMessage(name, number,message):
+def sendMessage(name, number, message, campaign_id):
     global wait, browser, database, invalidFlag
     try:
         input_box = browser.find_element_by_xpath('//div[@id="main"]/footer/div[1]/div[2]/div/div[2]')
@@ -159,7 +159,7 @@ def sendMessage(name, number,message):
         btnSend = browser.find_element_by_xpath('//div[@id="main"]/footer/div[1]/div[3]/button')
         btnSend.click()
         
-        database.makeMessageEntry(message, 'text', name, number, 0)
+        database.makeMessageEntry(message, 'text', name, number, campaign_id)
         print("Message sent")
         # time.sleep(5)
     except NoSuchElementException as err:
@@ -216,31 +216,47 @@ def sendFile(name, number, filename): # img - name of image along with ext
     print('file sent')
 
 def main():
+    
     global browser, database, invalidFlag
-    whatsappLogin()
-    wait.until(EC.presence_of_element_located((By.XPATH, '//input[@title="Search or start new chat"]')))
-    with open('contacts.csv', 'r') as csvfile:
-        reader = csv.reader(csvfile, delimiter=',')
-        for row in reader:
-            if not database.isEntryMade(row[0], row[1]): # check by the number if entry is made 
-                try:
-                    selectContactViaName(row[0])
-                    time.sleep(2)
-                    if not invalidFlag:
-                        with open('message.csv', 'r', encoding="utf8", errors="") as f:
-                            obj = csv.reader(f, delimiter='|')
-                            for msg in obj:
-                                if msg[0] in ('text', 'word'):
-                                    sendMessage(row[0], row[1], msg[1])
-                                    time.sleep(2)
-                                elif msg[0] in ('image', 'video', 'media'):
-                                    sendMedia(row[0], row[1], msg[1])
-                                    time.sleep(3)
-                                elif msg[0] in ('file'):
-                                    sendFile(row[0], row[1], msg[1]);
-                except Exception as e:
-                    print(e)
-                    pass
+
+    users = None
+    messages = None
+    campaign_id = None
+
+    with open('message.csv', 'r') as f:
+        data = f.read()
+
+        messages = csv.reader(data.splitlines())
+
+        campaign_id = list(messages)[0][1]
+
+        with open('contacts.csv', 'r') as csvfile:
+            users = csv.reader(csvfile, delimiter=',')
+            
+            if users and messages:
+    
+                whatsappLogin() # initiate login
+                
+                wait.until(EC.presence_of_element_located((By.XPATH, '//input[@title="Search or start new chat"]'))) # check if the page is loaded
+
+                for row in users:
+                    if not database.isEntryMade(row[0], row[1], campaign_id): # check by the number if entry is made
+                        try:
+                            selectContactViaName(row[0])
+                            time.sleep(2)
+                            if not invalidFlag:
+                                for msg in messages[1:]:
+                                    if msg[0] in ('text', 'word'):
+                                        sendMessage(row[0], row[1], msg[1])
+                                        time.sleep(2)
+                                    elif msg[0] in ('image', 'video', 'media'):
+                                        sendMedia(row[0], row[1], msg[1])
+                                        time.sleep(3)
+                                    elif msg[0] in ('file'):
+                                        sendFile(row[0], row[1], msg[1])
+                        except Exception as e:
+                            print(e)
+                            pass
 
 if __name__ == '__main__':
     main()

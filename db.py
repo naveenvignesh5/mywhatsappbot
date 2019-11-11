@@ -12,7 +12,7 @@ class db:
                 phone text not null,
                 message_type text,
                 timeStamp text not null,
-                campaign_id integer not null
+                campaign_id text not null
             );
 
             create table if not exists users (
@@ -22,26 +22,14 @@ class db:
                 user_type text not null,
                 created_at text not null
             );
-
-            create table if not exists campaigns (
-                id integer primary key autoincrement not null,
-                name text not null,
-                sent_at text
-            );
-
-            create table if not exists message (
-                id integer primary key autoincrement not null,
-                data text not null,
-                type text not null
-            );
         ''')
     
-    def isEntryMade(self, name, number):
-        today = str(datetime.datetime.now().date())
+    def isEntryMade(self, name, number, campaign_id):
         cur = self.conn.cursor()
         rows = cur.execute('''
-            select count(*) from messages where (name = ? or phone = ?) and date(timeStamp) = ?
-        ''', (name, number, today))
+            select count(*) from messages where (name = ? or phone = ?) and campaign_id = ?
+        ''', (name, number, campaign_id))
+
         flag = False
         
         for row in rows:
@@ -66,13 +54,4 @@ class db:
             (name, phone, user_type, created_at)
             values (?, ?, ?, ?)
         ''', (name, phone, user_type, now))
-        self.conn.commit()
-
-    def createCampaign(self,name):
-        now = str(datetime.datetime.now())
-        self.conn.execute('''
-            insert into campaigns
-            (name, sent_at)
-            values (?, ?)
-        ''', (name, now))
         self.conn.commit()
