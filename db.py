@@ -3,8 +3,8 @@ import datetime
 
 class db:
     def __init__(self):
-        # open('data.db', 'w+') # create data.db
         self.conn = sqlite3.connect('data.db')
+
         self.conn.executescript('''
             create table if not exists messages (
                 id integer primary key autoincrement not null,

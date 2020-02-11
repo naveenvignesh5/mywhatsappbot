@@ -166,7 +166,7 @@ def sendMessage(name, number, message, campaign_id):
         print("No such element exception" + str(err))
         return
 
-def sendMedia(name, number, img): # img - name of image along with ext
+def sendMedia(name, number, img, campaign_id): # img - name of image along with ext
     # Attachment Drop Down Menu
     clipButton = browser.find_element_by_xpath(
         '//*[@id="main"]/header/div[3]/div/div[2]/div/span')
@@ -186,12 +186,12 @@ def sendMedia(name, number, img): # img - name of image along with ext
     wait.until(EC.presence_of_element_located((By.XPATH, whatsapp_send_button_path)))
     whatsapp_send_button = browser.find_element_by_xpath(whatsapp_send_button_path)
     whatsapp_send_button.click()
-    database.makeMessageEntry(img, 'image', name, number, 0)
+    database.makeMessageEntry(img, 'image', name, number, campaign_id)
     # Controlling windows dialog
 
     print('media sent')
     
-def sendFile(name, number, filename): # img - name of image along with ext
+def sendFile(name, number, filename, campaign_id): # img - name of image along with ext
     # Attachment Drop Down Menu
     clipButton = browser.find_element_by_xpath(
         '//*[@id="main"]/header/div[3]/div/div[2]/div/span')
@@ -211,7 +211,7 @@ def sendFile(name, number, filename): # img - name of image along with ext
     wait.until(EC.presence_of_element_located((By.XPATH, whatsapp_send_button_path)))
     whatsapp_send_button = browser.find_element_by_xpath(whatsapp_send_button_path)
     whatsapp_send_button.click()
-    database.makeMessageEntry(filename, 'file', name, number, 0)
+    database.makeMessageEntry(filename, 'file', name, number, campaign_id)
 
     print('file sent')
 
@@ -226,15 +226,18 @@ def main():
     with open('message.csv', 'r') as f:
         data = f.read()
 
-        messages = csv.reader(data.splitlines())
+        messages = list(csv.reader(data.splitlines()))
 
-        campaign_id = list(messages)[0][1]
+        campaign_row = messages[0]
+
+        if campaign_row[0] == 'campaign':
+            campaign_id = campaign_row[1]
 
         with open('contacts.csv', 'r') as csvfile:
             users = csv.reader(csvfile, delimiter=',')
             
-            if users and messages:
-    
+            if users and messages and campaign_id:
+                
                 whatsappLogin() # initiate login
                 
                 wait.until(EC.presence_of_element_located((By.XPATH, '//input[@title="Search or start new chat"]'))) # check if the page is loaded
@@ -246,14 +249,15 @@ def main():
                             time.sleep(2)
                             if not invalidFlag:
                                 for msg in messages[1:]:
+                                    args = (row[0], row[1], msg[1], campaign_id)
                                     if msg[0] in ('text', 'word'):
-                                        sendMessage(row[0], row[1], msg[1])
+                                        sendMessage(*args)
                                         time.sleep(2)
                                     elif msg[0] in ('image', 'video', 'media'):
-                                        sendMedia(row[0], row[1], msg[1])
+                                        sendMedia(*args)
                                         time.sleep(3)
                                     elif msg[0] in ('file'):
-                                        sendFile(row[0], row[1], msg[1])
+                                        sendFile(*args)
                         except Exception as e:
                             print(e)
                             pass
