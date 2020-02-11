@@ -168,28 +168,33 @@ def sendMessage(name, number, message, campaign_id):
 
 def sendMedia(name, number, img, campaign_id): # img - name of image along with ext
     # Attachment Drop Down Menu
-    clipButton = browser.find_element_by_xpath(
-        '//*[@id="main"]/header/div[3]/div/div[2]/div/span')
-    clipButton.click()
-    time.sleep(1)
+    try:
+        clipButton = browser.find_element_by_xpath(
+            '//*[@id="main"]/header/div[3]/div/div[2]/div/span')
+        clipButton.click()
+        time.sleep(1)
 
-    # To send Videos and Images.
-    mediaButtonInput = browser.find_element_by_xpath(
-        '//*[@id="main"]/header/div[3]/div/div[2]/span/div/div/ul/li[1]/button/input')
-    
-    image_path = os.getcwd() + '/Media/' + img
+        # To send Videos and Images.
+        mediaButtonInput = browser.find_element_by_xpath(
+            '//*[@id="main"]/header/div[3]/div/div[2]/span/div/div/ul/li[1]/button/input')
+        
+        image_path = os.getcwd() + '/Media/' + img
 
-    mediaButtonInput.send_keys(image_path)
+        mediaButtonInput.send_keys(image_path)
 
-    time.sleep(3)
-    whatsapp_send_button_path = '//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/span[2]/div/div'
-    wait.until(EC.presence_of_element_located((By.XPATH, whatsapp_send_button_path)))
-    whatsapp_send_button = browser.find_element_by_xpath(whatsapp_send_button_path)
-    whatsapp_send_button.click()
-    database.makeMessageEntry(img, 'image', name, number, campaign_id)
-    # Controlling windows dialog
+        time.sleep(3)
+        # whatsapp_send_button_path = '//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/span[2]/div/div'
+        whatsapp_send_button_path = '//span[@data-icon="send-light"]/..'
+        wait.until(EC.presence_of_element_located((By.XPATH, whatsapp_send_button_path)))
+        whatsapp_send_button = browser.find_element_by_xpath(whatsapp_send_button_path)
+        whatsapp_send_button.click()
+        database.makeMessageEntry(img, 'image', name, number, campaign_id)
+        # Controlling windows dialog
 
-    print('media sent')
+        print('media sent')
+    except NoSuchElementException as e:
+        print(e)
+        pass
     
 def sendFile(name, number, filename, campaign_id): # img - name of image along with ext
     # Attachment Drop Down Menu
