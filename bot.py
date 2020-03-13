@@ -53,15 +53,18 @@ def selectContactViaName(username):
     try:
         wait.until(EC.presence_of_element_located(By.XPATH, target))
     except:
-        search_box = browser.find_element_by_xpath('//input[@title="Search or start new chat"]')
+        search_box = browser.find_element_by_xpath('//div[contains(@class, "copyable-text selectable-text")]')
         search_box.click()
-        search_box.clear()
+        # search_box.clear()
         
-        browser.execute_script('arguments[0].value += "' + str(name[:-1]) + '";', search_box)
-        search_box.send_keys(name[-1])
-
         # search_box.send_keys(Keys.SPACE)
         # search_box.send_keys(Keys.BACKSPACE)
+
+        browser.execute_script("arguments[0].innerHTML = arguments[1];", search_box, str(name[:-1]));
+
+        # browser.execute_script('arguments[0].value += "' + str(name[:-1]) + '";', search_box)
+        search_box.send_keys(name[-1])
+
 
         # for ch in str(name):
         #     search_box.send_keys(ch)
@@ -245,7 +248,7 @@ def main():
                 
                 whatsappLogin() # initiate login
                 
-                wait.until(EC.presence_of_element_located((By.XPATH, '//input[@title="Search or start new chat"]'))) # check if the page is loaded
+                wait.until(EC.presence_of_element_located((By.XPATH, '//div[text()="Search or start new chat"]'))) # check if the page is loaded
 
                 for row in users:
                     if not database.isEntryMade(row[0], row[1], campaign_id): # check by the number if entry is made
