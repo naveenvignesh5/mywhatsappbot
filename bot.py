@@ -187,7 +187,7 @@ def sendMedia(name, number, img, campaign_id): # img - name of image along with 
 
         time.sleep(3)
         # whatsapp_send_button_path = '//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/span[2]/div/div'
-        whatsapp_send_button_path = '//span[@data-icon="send-light"]/..'
+        whatsapp_send_button_path = '//span[@data-icon="send"]/..'
         wait.until(EC.presence_of_element_located((By.XPATH, whatsapp_send_button_path)))
         whatsapp_send_button = browser.find_element_by_xpath(whatsapp_send_button_path)
         whatsapp_send_button.click()
