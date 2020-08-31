@@ -57,13 +57,14 @@ def selectContactViaName(username):
         search_box.click()
         # search_box.clear()
         
-        # search_box.send_keys(Keys.SPACE)
-        # search_box.send_keys(Keys.BACKSPACE)
+        browser.execute_script("arguments[0].innerHTML = arguments[1];", search_box, str(name))
+        
+        search_box.send_keys(Keys.SPACE)
+        search_box.send_keys(Keys.BACKSPACE)
 
-        browser.execute_script("arguments[0].innerHTML = arguments[1];", search_box, str(name[:-1]));
 
         # browser.execute_script('arguments[0].value += "' + str(name[:-1]) + '";', search_box)
-        search_box.send_keys(name[-1])
+        # search_box.send_keys(name[-1])
 
 
         # for ch in str(name):
