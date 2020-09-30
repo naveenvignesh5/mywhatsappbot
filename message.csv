@@ -1,3 +1,4 @@
-campaign,test_campaign_sds
-text,"test message"
-image,sample.mp4
+campaign,campaign_name
+text,"sample text"
+image,sample.jpg
+video,sample.mp4
